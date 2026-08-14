@@ -3,7 +3,7 @@ const BasePage = require("./BasePage");
 class HomePage extends BasePage {
   constructor() {
     super();
-    this.botaoProdutos = ".shop-menu > .nav > :nth-child(2) > a";
+    this.botaoProdutos = ".shop-menu a[href='/products']";
     this.campoBusca = "#search_product";
     this.botaoBuscar = "#submit_search";
   }
@@ -11,7 +11,7 @@ class HomePage extends BasePage {
   acessarPaginaInicial() {
     this.acessarPagina("/");
   }
-  
+
   acessarMenuDeProdutos() {
     this.clicarElemento(this.botaoProdutos);
   }

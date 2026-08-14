@@ -1,97 +1,187 @@
-# QA Automation Framework — Cypress + Cucumber + Allure
+# QA Automation Framework
 
-Framework de automação de testes end-to-end (Web e API), estruturado em BDD com Cucumber/Gherkin, Page Objects e relatórios via Allure Report.
+Framework de automação de testes Web e API desenvolvido em JavaScript com Cypress, Cucumber/Gherkin e Allure Report.
 
-## 🧱 Stack
+O projeto foi estruturado para demonstrar cobertura de testes, organização de código, separação de responsabilidades, segurança de configurações e execução automatizada em CI.
 
-- [Cypress](https://www.cypress.io/) — execução dos testes
-- [Cucumber (Gherkin)](https://cucumber.io/) via `@badeball/cypress-cucumber-preprocessor` — escrita de cenários em BDD
-- [Allure Report](https://allurereport.org/) via `@shelex/cypress-allure-plugin` — relatórios de execução
-- `dotenv` — variáveis de ambiente e credenciais fora do código
+## Tecnologias
 
-## 📁 Estrutura de pastas
+- JavaScript
+- Cypress
+- Cucumber / Gherkin
+- Page Object
+- Service Object
+- Allure Report
+- dotenv
+- GitHub Actions
+- Git / GitFlow
 
+## Arquitetura
+
+```text
+Web: Feature -> Steps -> Page Object -> Aplicação Web
+API: Feature -> Steps -> Service Object -> API
 ```
+
+Principais responsabilidades:
+
+- `features`: cenários escritos em linguagem de negócio.
+- `steps`: ligação entre Gherkin e implementação.
+- `pages`: interações e validações da interface Web.
+- `support/services`: chamadas e configurações da API.
+- `support/data`: geração e fornecimento de massa de testes.
+
+## Estrutura do projeto
+
+```text
+.github/workflows/
+└── ci.yml
+
 cypress/
-├── e2e/
-│   └── features/
-│       ├── web/        -> arquivos .feature dos cenários Web
-│       └── api/         -> arquivos .feature dos cenários de API
+├── e2e/features/
+│   ├── web/
+│   └── api/
 ├── steps/
-│   ├── web/              -> step definitions dos cenários Web
-│   └── api/              -> step definitions dos cenários de API
-├── pages/                -> Page Objects (Web)
-├── support/
-│   ├── e2e.js
-│   └── commands.js
-├── fixtures/             -> massa de dados de teste
-cypress.config.js
+│   ├── web/
+│   └── api/
+├── pages/
+└── support/
+    ├── data/
+    ├── services/
+    ├── commands.js
+    └── e2e.js
+
 .env.example
-.gitignore
+cypress.config.js
+CONTRIBUTING.md
 package.json
 ```
 
-## ⚙️ Pré-requisitos
+## Pré-requisitos
 
 - Node.js 18+
 - npm 9+
-- Java (necessário apenas para gerar/visualizar o relatório Allure via `allure-commandline`)
+- Java, necessário para gerar e visualizar relatórios Allure
 
-## 🚀 Instalação
+## Configuração rápida
+
+1. Instale as dependências:
 
 ```bash
-npm install
+npm ci
 ```
 
-Em seguida, copie o arquivo de variáveis de ambiente e preencha com os valores necessários:
+2. Crie o arquivo local de variáveis de ambiente:
+
+macOS / Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-> Nenhuma credencial deve ser commitada no código. Todas as URLs e credenciais ficam no `.env`, que é ignorado pelo Git.
+Windows PowerShell:
 
-## ▶️ Execução dos testes
+```powershell
+Copy-Item .env.example .env
+```
 
-Modo interativo (Test Runner):
+3. Preencha as credenciais Web no `.env`:
+
+```env
+BASE_URL=https://www.automationexercise.com
+LOGIN_EMAIL=
+LOGIN_PASSWORD=
+
+API_BASE_URL=https://api.trello.com
+API_ACTION_PATH=/1/actions/592f11060f95a3d3d46a987a
+```
+
+O arquivo `.env` não deve ser versionado. O `.env.example` permanece no repositório apenas como referência de configuração.
+
+## Execução dos testes
+
+Abrir o Cypress em modo interativo:
+
 ```bash
 npm run cy:open
 ```
 
-Modo headless (linha de comando):
+Executar toda a suíte:
+
 ```bash
 npm run cy:run
 ```
 
-Executar apenas cenários Web:
+Executar somente Web:
+
 ```bash
 npm run cy:run:web
 ```
 
-Executar apenas cenários de API:
+Executar somente API:
+
 ```bash
 npm run cy:run:api
 ```
 
-## 📊 Relatório Allure
+## Cobertura Web
 
-Após a execução, gere e abra o relatório:
+A automação utiliza o site Automation Exercise e cobre:
+
+- login válido e inválido;
+- busca por produto existente, parcial, com variação de letras e inexistente;
+- inclusão e remoção de produto no carrinho;
+- validação de produto no carrinho;
+- comparação de nome, preço, quantidade e total no checkout.
+
+## Cobertura API
+
+A automação utiliza o endpoint público do Trello:
+
+```text
+GET https://api.trello.com/1/actions/592f11060f95a3d3d46a987a
+```
+
+Validações implementadas:
+
+- status HTTP `200`;
+- leitura e exibição de `data.list.name`;
+- presença e tipo dos campos essenciais da resposta;
+- contrato estrutural mínimo da ação e de `data.list`.
+
+As chamadas ficam centralizadas em `TrelloApiService`, mantendo `cy.request()` fora dos step definitions.
+
+## Relatório Allure
+
+Gerar o relatório:
 
 ```bash
 npm run allure:generate
+```
+
+Abrir o relatório:
+
+```bash
 npm run allure:open
 ```
 
-Ou rode tudo em sequência (testes + geração + abertura do relatório):
+## Integração Contínua
 
-```bash
-npm run test
+O workflow está em:
+
+```text
+.github/workflows/ci.yml
 ```
 
-## 🧩 Convenções do projeto
+A esteira é executada automaticamente em pushes e Pull Requests direcionados às branches `develop` e `main`.
 
-- Cenários escritos em Gherkin (`.feature`), um arquivo por funcionalidade.
-- Nomenclatura de pastas fixa: `features`, `steps`, `pages`.
-- Nomes de métodos autoexplicativos — sem comentários no código.
-- Sem duplicidade de métodos entre Page Objects.
-- Sem credenciais hardcoded — tudo via `.env`.
+Na CI, as credenciais Web devem ser cadastradas como GitHub Secrets:
+
+- `LOGIN_EMAIL`
+- `LOGIN_PASSWORD`
+
+As configurações públicas de URL podem permanecer definidas no workflow.
+
+## Contribuição
+
+O fluxo de branches, padrão de commits e regras de Pull Request estão documentados em [CONTRIBUTING.md](./CONTRIBUTING.md).

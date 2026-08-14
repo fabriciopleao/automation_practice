@@ -9,7 +9,8 @@
     "cy:run:api": "cypress run --spec \"cypress/e2e/features/api/**/*.feature\"",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:open": "allure open allure-report",
-    "test": "npm run cy:run && npm run allure:generate && npm run allure:open"
+    "test": "npm run cy:run && npm run allure:generate && npm run allure:open",
+    "test:ci": "npm run cy:run && npm run allure:generate"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^20.0.4",

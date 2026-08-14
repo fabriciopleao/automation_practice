@@ -1,0 +1,80 @@
+name: CI - Testes de Automação
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  cypress-run:
+    name: Executar testes Cypress + Cucumber
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes Web e API
+        run: npm run test:ci
+        env:
+          BASE_URL: https://www.automationexercise.com
+          API_BASE_URL: https://api.trello.com
+          API_ACTION_PATH: /1/actions/592f11060f95a3d3d46a987a
+          LOGIN_EMAIL: ${{ secrets.LOGIN_EMAIL }}
+          LOGIN_PASSWORD: ${{ secrets.LOGIN_PASSWORD }}
+
+      - name: Publicar resultados do Allure como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 15
+
+      - name: Publicar vídeos e screenshots em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-evidencias-falha
+          path: |
+            cypress/videos
+            cypress/screenshots
+          retention-days: 7
+
+  publish-report:
+    permissions:
+      contents: write
+    name: Publicar relatório Allure no GitHub Pages
+    needs: cypress-run
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar relatório gerado
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
+      - name: Publicar no GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report

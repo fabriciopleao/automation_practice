@@ -21,10 +21,18 @@ async function setupNodeEvents(on, config) {
 
   allureWriter(on, config);
 
+  on("task", {
+    exibirResultado(mensagem) {
+      console.log(mensagem);
+      return null;
+    },
+  });
+
   config.env = {
     ...config.env,
     BASE_URL: process.env.BASE_URL,
     API_BASE_URL: process.env.API_BASE_URL,
+    API_ACTION_PATH: process.env.API_ACTION_PATH,
     LOGIN_EMAIL: process.env.LOGIN_EMAIL,
     LOGIN_PASSWORD: process.env.LOGIN_PASSWORD,
   };
@@ -41,8 +49,6 @@ module.exports = defineConfig({
     env: {
       allure: true,
       allureResultsPath: "allure-results",
-      filterSpecs: true,
-      tags: "@focus"
     },
     chromeWebSecurity: false,
     defaultCommandTimeout: 10000,
