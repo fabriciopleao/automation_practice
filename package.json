@@ -6,11 +6,12 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:web": "cypress run --spec \"cypress/e2e/features/web/**/*.feature\"",
+    "cy:run:web:public": "cypress run --spec \"cypress/e2e/features/web/busca.feature,cypress/e2e/features/web/carrinho.feature\"",
+    "cy:run:web:auth": "cypress run --spec \"cypress/e2e/features/web/login.feature,cypress/e2e/features/web/checkout.feature\"",
     "cy:run:api": "cypress run --spec \"cypress/e2e/features/api/**/*.feature\"",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:open": "allure open allure-report",
-    "test": "npm run cy:run && npm run allure:generate && npm run allure:open",
-    "test:ci": "npm run cy:run && npm run allure:generate"
+    "test": "npm run cy:run && npm run allure:generate && npm run allure:open"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^20.0.4",

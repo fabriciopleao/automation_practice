@@ -1,6 +1,6 @@
 # Guia de Contribuição
 
-Este documento define o fluxo utilizado para organizar novas alterações no projeto.
+Este documento define o fluxo utilizado para organizar alterações no projeto.
 
 ## Estratégia de branches
 
@@ -9,7 +9,7 @@ O projeto adota GitFlow para separar desenvolvimento, integração e versões es
 | Branch | Finalidade |
 |---|---|
 | `main` | Versão estável e validada do projeto. |
-| `develop` | Integração das alterações que serão preparadas para a próxima entrega. |
+| `develop` | Integração das alterações da próxima entrega. |
 
 Branches de apoio:
 
@@ -19,44 +19,31 @@ Branches de apoio:
 | Release | `release/<versao>` | `develop` | `main` e `develop` |
 | Hotfix | `hotfix/<nome-curto>` | `main` | `main` e `develop` |
 
-Exemplos:
-
-```text
-feature/api-trello
-feature/web-carrinho
-feature/github-actions
-release/1.1.0
-hotfix/corrige-login
-```
-
 ## Fluxo para novas alterações
 
-1. Atualize a branch `develop`:
+1. Atualize `develop`:
 
 ```bash
 git switch develop
 git pull origin develop
 ```
 
-2. Crie uma branch específica para a alteração:
+2. Crie uma branch específica:
 
 ```bash
 git switch -c feature/nome-da-feature
 ```
 
-3. Implemente e valide a mudança localmente.
-
-4. Faça commits pequenos e com objetivo claro.
-
-5. Envie a branch para o repositório remoto:
+3. Implemente e valide a alteração localmente.
+4. Faça commits pequenos e objetivos.
+5. Envie a branch:
 
 ```bash
 git push -u origin feature/nome-da-feature
 ```
 
-6. Abra um Pull Request da branch de feature para `develop`.
-
-7. Faça o merge somente após a execução da CI estar concluída com sucesso.
+6. Abra um Pull Request para `develop`.
+7. Faça o merge somente após a conclusão da CI e a análise dos resultados.
 
 Alterações comuns não devem ser desenvolvidas diretamente na `main`.
 
@@ -64,63 +51,35 @@ Alterações comuns não devem ser desenvolvidas diretamente na `main`.
 
 O projeto utiliza Conventional Commits.
 
-Formatos mais utilizados:
-
 ```text
 feat: nova funcionalidade
 fix: correção de comportamento
 test: inclusão ou alteração de testes
 refactor: alteração estrutural sem mudança de comportamento
 docs: documentação
-ci: configuração de integração contínua
+ci: integração contínua
 ```
 
-Exemplos:
-
-```text
-feat: implementa service object do Trello
-test: adiciona validacao de contrato da API
-fix: corrige remocao de produto no carrinho
-refactor: centraliza massa de dados em providers
-ci: configura execucao dos testes no GitHub Actions
-docs: atualiza instrucoes de execucao
-```
-
-## Pull Requests
-
-Cada Pull Request deve:
-
-- ter título objetivo e relacionado à alteração;
-- explicar resumidamente o que foi modificado;
-- informar os cenários impactados quando aplicável;
-- estar direcionado para a branch correta;
-- passar pela esteira de CI antes do merge.
-
-Evite títulos genéricos como `ajustes`, `correcoes` ou `alteracoes finais`.
+Evite mensagens genéricas como `ajustes`, `correcoes` ou `alteracoes finais`.
 
 ## Validação antes do Pull Request
 
-Antes de abrir o PR, execute os testes relacionados à alteração.
-
-Web:
+Execute os testes relacionados à alteração:
 
 ```bash
 npm run cy:run:web
-```
-
-API:
-
-```bash
 npm run cy:run:api
 ```
 
-Suíte completa:
+Para a suíte completa:
 
 ```bash
 npm run cy:run
 ```
 
-Também confirme que arquivos locais ou gerados não foram adicionados ao commit, especialmente:
+Na CI, indisponibilidade externa do Automation Exercise pode impedir a execução de parte dos cenários Web. Essa condição deve permanecer identificada no resumo do workflow e não deve ser interpretada como aprovação dos testes não executados.
+
+Também confirme que arquivos locais ou gerados não foram adicionados ao commit:
 
 ```text
 .env
@@ -135,5 +94,5 @@ cypress/downloads/
 ## Segurança
 
 - Não versionar credenciais, tokens ou senhas.
-- Manter dados sensíveis apenas no `.env` local ou em GitHub Secrets.
+- Manter dados sensíveis no `.env` local ou em GitHub Secrets.
 - Utilizar `.env.example` somente como referência das variáveis necessárias.

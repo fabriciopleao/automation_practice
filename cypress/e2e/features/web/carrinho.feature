@@ -2,8 +2,7 @@
 Funcionalidade: Carrinho de compras
 
   Contexto:
-    Dado que eu realizo login com as credenciais do ambiente
-    E que estou na página inicial
+    Dado que estou na página inicial
 
   Cenário: Adicionar um produto ao carrinho
     Quando eu busco por um produto válido

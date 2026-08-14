@@ -50,7 +50,6 @@ module.exports = defineConfig({
       allure: true,
       allureResultsPath: "allure-results",
     },
-    chromeWebSecurity: false,
     defaultCommandTimeout: 10000,
     viewportWidth: 1366,
     viewportHeight: 768,

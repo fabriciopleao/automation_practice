@@ -2,8 +2,7 @@
 Funcionalidade: Busca de produtos
 
   Contexto:
-    Dado que eu realizo login com as credenciais do ambiente
-    E que estou na página inicial
+    Dado que estou na página inicial
 
   Cenário: Buscar por um produto existente
     Quando eu busco por um produto válido

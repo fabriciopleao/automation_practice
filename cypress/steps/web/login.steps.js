@@ -1,6 +1,7 @@
 const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor");
 const LoginPage = require("../../pages/LoginPage");
 const {
+  obterCredencialValidaDoAmbiente,
   obterCredencialInvalidaAleatoria,
 } = require("../../support/data/CredenciaisDataProvider");
 
@@ -9,19 +10,16 @@ Given("que estou na página de login", () => {
 });
 
 Given("que eu realizo login com as credenciais do ambiente", () => {
-  const email = Cypress.env("LOGIN_EMAIL");
-  const senha = Cypress.env("LOGIN_PASSWORD");
+  const credencial = obterCredencialValidaDoAmbiente();
 
   LoginPage.acessarPaginaDeLogin();
-  LoginPage.realizarLogin(email, senha);
+  LoginPage.realizarLogin(credencial.email, credencial.senha);
   LoginPage.usuarioDeveEstarLogado();
 });
 
 When("eu realizo login com as credenciais do ambiente", () => {
-  const email = Cypress.env("LOGIN_EMAIL");
-  const senha = Cypress.env("LOGIN_PASSWORD");
-
-  LoginPage.realizarLogin(email, senha);
+  const credencial = obterCredencialValidaDoAmbiente();
+  LoginPage.realizarLogin(credencial.email, credencial.senha);
 });
 
 When("eu tento login com uma credencial inválida", () => {

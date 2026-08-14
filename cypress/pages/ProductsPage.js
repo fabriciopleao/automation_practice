@@ -3,12 +3,19 @@ const BasePage = require("./BasePage");
 class ProductsPage extends BasePage {
   constructor() {
     super();
+    this.campoBusca = "#search_product";
+    this.botaoBuscar = "#submit_search";
     this.tituloResultadosBusca = ".title.text-center";
     this.itemProduto = ".product-image-wrapper";
     this.nomeProduto = ".productinfo p";
     this.botaoContinuarComprando = "button:contains('Continue Shopping')";
     this.linkVerCarrinho = ".shop-menu a[href='/view_cart']";
     this.botaoAdicionarAoCarrinho = ".productinfo a.add-to-cart";
+  }
+
+  buscarProduto(nomeProduto) {
+    this.preencherCampo(this.campoBusca, nomeProduto);
+    this.clicarElemento(this.botaoBuscar);
   }
 
   resultadosDaBuscaDevemSerExibidos() {

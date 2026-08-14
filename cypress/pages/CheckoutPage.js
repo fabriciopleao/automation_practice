@@ -10,12 +10,23 @@ class CheckoutPage extends BasePage {
     this.totalItem = ".cart_total_price";
   }
 
-  validarProdutoNaTelaDePagamento(nomeProduto, dadosCarrinho) {
-    cy.contains(this.linhaItem, nomeProduto).within(() => {
-      cy.get(this.nomeItem).should("contain.text", nomeProduto);
-      cy.get(this.precoItem).should("contain.text", dadosCarrinho.preco);
-      cy.get(this.quantidadeItem).should("contain.text", dadosCarrinho.quantidade);
-      cy.get(this.totalItem).should("contain.text", dadosCarrinho.total);
+  validarTextoNormalizado(seletor, valorEsperado) {
+    cy.get(seletor)
+      .invoke("text")
+      .then((texto) => {
+        expect(texto.trim()).to.eq(valorEsperado);
+      });
+  }
+
+  validarProdutoNaTelaDePagamento(dadosCarrinho) {
+    cy.contains(this.linhaItem, dadosCarrinho.nome).within(() => {
+      this.validarTextoNormalizado(this.nomeItem, dadosCarrinho.nome);
+      this.validarTextoNormalizado(this.precoItem, dadosCarrinho.preco);
+      this.validarTextoNormalizado(
+        this.quantidadeItem,
+        dadosCarrinho.quantidade
+      );
+      this.validarTextoNormalizado(this.totalItem, dadosCarrinho.total);
     });
   }
 }

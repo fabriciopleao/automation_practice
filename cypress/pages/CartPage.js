@@ -20,7 +20,7 @@ class CartPage extends BasePage {
 
   obterDadosDoProdutoNoCarrinho(nomeProduto) {
     return cy.contains(this.linhaItem, nomeProduto).then(($linha) => ({
-      nome: nomeProduto,
+      nome: $linha.find(this.nomeItemCarrinho).text().trim(),
       preco: $linha.find(this.precoItemCarrinho).text().trim(),
       quantidade: $linha.find(this.quantidadeItemCarrinho).text().trim(),
       total: $linha.find(this.totalItemCarrinho).text().trim(),

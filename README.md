@@ -1,16 +1,13 @@
 # QA Automation Framework
 
-Framework de automação de testes Web e API desenvolvido em JavaScript com Cypress, Cucumber/Gherkin e Allure Report.
-
-O projeto foi estruturado para demonstrar cobertura de testes, organização de código, separação de responsabilidades, segurança de configurações e execução automatizada em CI.
+Framework de automação Web e API em JavaScript com Cypress, Cucumber/Gherkin e Allure Report.
 
 ## Tecnologias
 
 - JavaScript
 - Cypress
 - Cucumber / Gherkin
-- Page Object
-- Service Object
+- Page Object e Service Object
 - Allure Report
 - dotenv
 - GitHub Actions
@@ -23,20 +20,7 @@ Web: Feature -> Steps -> Page Object -> Aplicação Web
 API: Feature -> Steps -> Service Object -> API
 ```
 
-Principais responsabilidades:
-
-- `features`: cenários escritos em linguagem de negócio.
-- `steps`: ligação entre Gherkin e implementação.
-- `pages`: interações e validações da interface Web.
-- `support/services`: chamadas e configurações da API.
-- `support/data`: geração e fornecimento de massa de testes.
-
-## Estrutura do projeto
-
 ```text
-.github/workflows/
-└── ci.yml
-
 cypress/
 ├── e2e/features/
 │   ├── web/
@@ -48,19 +32,13 @@ cypress/
 └── support/
     ├── data/
     ├── services/
-    ├── commands.js
     └── e2e.js
-
-.env.example
-cypress.config.js
-CONTRIBUTING.md
-package.json
 ```
 
 ## Pré-requisitos
 
-- Node.js 18+
-- npm 9+
+- Node.js 22 LTS
+- npm
 - Java, necessário para gerar e visualizar relatórios Allure
 
 ## Configuração rápida
@@ -96,92 +74,54 @@ API_BASE_URL=https://api.trello.com
 API_ACTION_PATH=/1/actions/592f11060f95a3d3d46a987a
 ```
 
-O arquivo `.env` não deve ser versionado. O `.env.example` permanece no repositório apenas como referência de configuração.
+O `.env` é local e não deve ser versionado. O `.env.example` contém somente a referência das variáveis necessárias.
 
-## Execução dos testes
-
-Abrir o Cypress em modo interativo:
+## Execução
 
 ```bash
 npm run cy:open
-```
-
-Executar toda a suíte:
-
-```bash
 npm run cy:run
-```
-
-Executar somente Web:
-
-```bash
 npm run cy:run:web
-```
-
-Executar somente API:
-
-```bash
 npm run cy:run:api
 ```
 
-## Cobertura Web
+## Cobertura
 
-A automação utiliza o site Automation Exercise e cobre:
+Web:
 
 - login válido e inválido;
 - busca por produto existente, parcial, com variação de letras e inexistente;
 - inclusão e remoção de produto no carrinho;
-- validação de produto no carrinho;
 - comparação de nome, preço, quantidade e total no checkout.
 
-## Cobertura API
-
-A automação utiliza o endpoint público do Trello:
-
-```text
-GET https://api.trello.com/1/actions/592f11060f95a3d3d46a987a
-```
-
-Validações implementadas:
+API Trello:
 
 - status HTTP `200`;
 - leitura e exibição de `data.list.name`;
-- presença e tipo dos campos essenciais da resposta;
-- contrato estrutural mínimo da ação e de `data.list`.
+- validação do contrato estrutural mínimo da resposta.
 
-As chamadas ficam centralizadas em `TrelloApiService`, mantendo `cy.request()` fora dos step definitions.
+As chamadas da API ficam centralizadas em `TrelloApiService`.
 
-## Relatório Allure
-
-Gerar o relatório:
+## Allure Report
 
 ```bash
 npm run allure:generate
-```
-
-Abrir o relatório:
-
-```bash
 npm run allure:open
 ```
 
 ## Integração Contínua
 
-O workflow está em:
+O workflow `.github/workflows/ci.yml` separa a execução em jobs de API, Web público e Web autenticado.
 
-```text
-.github/workflows/ci.yml
-```
+Os testes Web verificam primeiro a disponibilidade do Automation Exercise. Quando o ambiente externo bloqueia o runner do GitHub Actions, por exemplo com HTTP `403`, os cenários afetados são registrados como **não executados por indisponibilidade externa**, e não como testes aprovados.
 
-A esteira é executada automaticamente em pushes e Pull Requests direcionados às branches `develop` e `main`.
-
-Na CI, as credenciais Web devem ser cadastradas como GitHub Secrets:
+Os cenários autenticados utilizam os GitHub Secrets:
 
 - `LOGIN_EMAIL`
 - `LOGIN_PASSWORD`
 
-As configurações públicas de URL podem permanecer definidas no workflow.
+Em pushes para `main`, os resultados Allure disponíveis são consolidados e publicados no GitHub Pages.
 
 ## Contribuição
 
-O fluxo de branches, padrão de commits e regras de Pull Request estão documentados em [CONTRIBUTING.md](./CONTRIBUTING.md).
+Fluxo de branches, commits e Pull Requests: [CONTRIBUTING.md](./CONTRIBUTING.md).

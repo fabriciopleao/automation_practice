@@ -13,9 +13,7 @@ When("eu prossigo para o checkout", () => {
 });
 
 Then("o produto deve estar presente na tela de pagamento", () => {
-  cy.get("@produtoBuscado").then((produto) => {
-    cy.get("@dadosProdutoCarrinho").then((dadosProduto) => {
-      CheckoutPage.validarProdutoNaTelaDePagamento(produto, dadosProduto);
-    });
+  cy.get("@dadosProdutoCarrinho").then((dadosProduto) => {
+    CheckoutPage.validarProdutoNaTelaDePagamento(dadosProduto);
   });
 });

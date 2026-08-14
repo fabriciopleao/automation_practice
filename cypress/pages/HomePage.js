@@ -4,8 +4,6 @@ class HomePage extends BasePage {
   constructor() {
     super();
     this.botaoProdutos = ".shop-menu a[href='/products']";
-    this.campoBusca = "#search_product";
-    this.botaoBuscar = "#submit_search";
   }
 
   acessarPaginaInicial() {
@@ -14,11 +12,6 @@ class HomePage extends BasePage {
 
   acessarMenuDeProdutos() {
     this.clicarElemento(this.botaoProdutos);
-  }
-
-  buscarProduto(nomeProduto) {
-    this.preencherCampo(this.campoBusca, nomeProduto);
-    this.clicarElemento(this.botaoBuscar);
   }
 }
 
