@@ -1,0 +1,530 @@
+{
+  "info": {
+    "_postman_id": "07203d77-2834-4ab7-8b28-98effc851e9d",
+    "name": "advantage - testes funcionais API v4",
+    "description": "Collection refinada após análise do Runner. Cenários com corpo vazio esperado não falham por tentativa de parse JSON. Cenários que retornam HTTP 500 permanecem falhando de forma intencional para evidenciar erro interno do serviço.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Pesquisa de Produtos - API",
+      "item": [
+        {
+          "name": "CT01 - Pesquisa por produto existente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=HP%20Z3600%20Wireless%20Mouse",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "HP Z3600 Wireless Mouse"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta possui formato JSON válido\", function () {",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "    pm.expect(contentType.toLowerCase()).to.include(\"json\");",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna o produto pesquisado\", function () {",
+                  "    const body = pm.response.json();",
+                  "    const products = body.flatMap(category => Array.isArray(category.products) ? category.products : []);",
+                  "    pm.expect(products.some(product => product.productName === \"HP Z3600 Wireless Mouse\")).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT02 - Pesquisa por parte do nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=mous",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "mous"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta possui formato JSON válido\", function () {",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "    pm.expect(contentType.toLowerCase()).to.include(\"json\");",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Todos os produtos retornados correspondem ao termo pesquisado\", function () {",
+                  "    const term = \"mous\";",
+                  "    const body = pm.response.json();",
+                  "    const products = body.flatMap(category => Array.isArray(category.products) ? category.products : []);",
+                  "    pm.expect(products.length).to.be.greaterThan(0);",
+                  "    products.forEach(product => pm.expect(product.productName.toLowerCase()).to.include(term));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT03 - Pesquisa por produto inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=ProdutoInexistente123",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "ProdutoInexistente123"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Não retorna produtos para termo inexistente\", function () {",
+                  "    const text = pm.response.text().trim();",
+                  "    if (!text) {",
+                  "        pm.expect(text).to.eql(\"\");",
+                  "        return;",
+                  "    }",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT04 - Pesquisa sem informar termo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": []
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ausência do termo deve ser tratada sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT05 - Limite de produtos por categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse&quantityPerEachCategory=2",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                },
+                {
+                  "key": "quantityPerEachCategory",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta possui formato JSON válido\", function () {",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "    pm.expect(contentType.toLowerCase()).to.include(\"json\");",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Respeita o limite de produtos por categoria\", function () {",
+                  "    const body = pm.response.json();",
+                  "    body.forEach(category => {",
+                  "        pm.expect(category.products).to.be.an(\"array\");",
+                  "        pm.expect(category.products.length).to.be.at.most(2);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT06 - Validação de contrato",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = {\"type\": \"array\", \"items\": {\"type\": \"object\", \"required\": [\"categoryId\", \"categoryName\", \"categoryImageId\", \"products\"], \"properties\": {\"categoryId\": {\"type\": \"integer\"}, \"categoryName\": {\"type\": \"string\"}, \"categoryImageId\": {\"type\": \"string\"}, \"products\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"required\": [\"productId\", \"categoryId\", \"productName\", \"price\", \"imageUrl\"], \"properties\": {\"productId\": {\"type\": \"integer\"}, \"categoryId\": {\"type\": \"integer\"}, \"productName\": {\"type\": \"string\"}, \"price\": {\"type\": \"number\"}, \"imageUrl\": {\"type\": \"string\"}}, \"additionalProperties\": true}}}, \"additionalProperties\": true}};",
+                  "",
+                  "pm.test(\"Contrato mínimo da resposta é válido\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT07 - Pesquisa utilizando somente espaços",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=%20%20%20",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "   "
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Pesquisa somente com espaços é tratada sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"Resultado vazio é aceito como corpo vazio ou lista vazia\", function () {",
+                  "    const text = pm.response.text().trim();",
+                  "    if (!text) {",
+                  "        pm.expect(text).to.eql(\"\");",
+                  "        return;",
+                  "    }",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT08 - Pesquisa com caracteres especiais",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=%40%23%24%25%26%2A",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "@#$%&*"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Caracteres especiais devem ser tratados sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT09 - Quantidade por categoria igual a zero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse&quantityPerEachCategory=0",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                },
+                {
+                  "key": "quantityPerEachCategory",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Quantidade igual a zero é tratada sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"Resultado vazio é aceito como corpo vazio ou lista vazia\", function () {",
+                  "    const text = pm.response.text().trim();",
+                  "    if (!text) {",
+                  "        pm.expect(text).to.eql(\"\");",
+                  "        return;",
+                  "    }",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT10 - Quantidade por categoria não numérica",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse&quantityPerEachCategory=abc",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                },
+                {
+                  "key": "quantityPerEachCategory",
+                  "value": "abc"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Quantidade não numérica deve ser rejeitada sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "    pm.expect(pm.response.code).to.not.equal(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT11 - Método não permitido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Método não suportado deve ser rejeitado sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "    pm.expect(pm.response.code).to.not.equal(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "CT12 - Header Accept incompatível",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/xml",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{catalogo}}{{buscarProduto}}?name=Mouse",
+              "host": [
+                "{{baseUrl}}{{catalogo}}{{buscarProduto}}"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Mouse"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Formato de resposta incompatível deve ser tratado sem erro interno\", function () {",
+                  "    pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
