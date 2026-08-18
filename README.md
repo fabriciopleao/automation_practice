@@ -1,97 +1,132 @@
-# QA Automation Framework — Cypress + Cucumber + Allure
+# QA Automation Framework
 
-Framework de automação de testes end-to-end (Web e API), estruturado em BDD com Cucumber/Gherkin, Page Objects e relatórios via Allure Report.
+Framework de automação Web e API em JavaScript com Cypress, Cucumber/Gherkin e Allure Report.
 
-## 🧱 Stack
+## Tecnologias
 
-- [Cypress](https://www.cypress.io/) — execução dos testes
-- [Cucumber (Gherkin)](https://cucumber.io/) via `@badeball/cypress-cucumber-preprocessor` — escrita de cenários em BDD
-- [Allure Report](https://allurereport.org/) via `@shelex/cypress-allure-plugin` — relatórios de execução
-- `dotenv` — variáveis de ambiente e credenciais fora do código
+- JavaScript
+- Cypress
+- Cucumber / Gherkin
+- Page Object e Service Object
+- Allure Report
+- dotenv
+- GitHub Actions
+- Git / GitFlow
 
-## 📁 Estrutura de pastas
+## Arquitetura
 
+```text
+Web: Feature -> Steps -> Page Object -> Aplicação Web
+API: Feature -> Steps -> Service Object -> API
 ```
+
+```text
 cypress/
-├── e2e/
-│   └── features/
-│       ├── web/        -> arquivos .feature dos cenários Web
-│       └── api/         -> arquivos .feature dos cenários de API
+├── e2e/features/
+│   ├── web/
+│   └── api/
 ├── steps/
-│   ├── web/              -> step definitions dos cenários Web
-│   └── api/              -> step definitions dos cenários de API
-├── pages/                -> Page Objects (Web)
-├── support/
-│   ├── e2e.js
-│   └── commands.js
-├── fixtures/             -> massa de dados de teste
-cypress.config.js
-.env.example
-.gitignore
-package.json
+│   ├── web/
+│   └── api/
+├── pages/
+└── support/
+    ├── data/
+    ├── services/
+    └── e2e.js
 ```
 
-## ⚙️ Pré-requisitos
+## Pré-requisitos
 
-- Node.js 18+
-- npm 9+
-- Java (necessário apenas para gerar/visualizar o relatório Allure via `allure-commandline`)
+- Node.js 22 LTS
+- npm
+- Java, necessário para gerar e visualizar relatórios Allure
 
-## 🚀 Instalação
+## Configuração rápida
+
+1. Instale as dependências:
 
 ```bash
-npm install
+npm ci
 ```
 
-Em seguida, copie o arquivo de variáveis de ambiente e preencha com os valores necessários:
+2. Crie o arquivo local de variáveis de ambiente:
+
+macOS / Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-> Nenhuma credencial deve ser commitada no código. Todas as URLs e credenciais ficam no `.env`, que é ignorado pelo Git.
+Windows PowerShell:
 
-## ▶️ Execução dos testes
+```powershell
+Copy-Item .env.example .env
+```
 
-Modo interativo (Test Runner):
+3. Preencha as credenciais Web no `.env`:
+
+```env
+BASE_URL=https://www.automationexercise.com
+LOGIN_EMAIL=
+LOGIN_PASSWORD=
+
+API_BASE_URL=https://api.trello.com
+API_ACTION_PATH=/1/actions/592f11060f95a3d3d46a987a
+```
+
+O `.env` é local e não deve ser versionado. O `.env.example` contém somente a referência das variáveis necessárias.
+
+## Execução
+
 ```bash
 npm run cy:open
-```
-
-Modo headless (linha de comando):
-```bash
 npm run cy:run
-```
-
-Executar apenas cenários Web:
-```bash
 npm run cy:run:web
-```
-
-Executar apenas cenários de API:
-```bash
 npm run cy:run:api
 ```
 
-## 📊 Relatório Allure
+## Cobertura
 
-Após a execução, gere e abra o relatório:
+Web:
+
+- login válido e inválido;
+- busca por produto existente, parcial, com variação de letras e inexistente;
+- inclusão e remoção de produto no carrinho;
+- comparação de nome, preço, quantidade e total no checkout.
+
+API Trello:
+
+- consulta de uma ação existente com validação do status HTTP `200`;
+- leitura e exibição de `data.list.name`;
+- validação do contrato estrutural da ação, incluindo identificador, criador, data, tipo, lista, quadro e cartão;
+- validação do identificador da ação retornada;
+- validação funcional dos dados relacionados de lista, quadro e cartão;
+- validação do tipo da ação;
+- validação do `Content-Type` JSON;
+- cenário negativo para ação inexistente, com validação do status HTTP `404`.
+
+As chamadas da API ficam centralizadas em `TrelloApiService`, enquanto massas e valores esperados dos cenários ficam em `TrelloDataProvider`.
+
+## Allure Report
 
 ```bash
 npm run allure:generate
 npm run allure:open
 ```
 
-Ou rode tudo em sequência (testes + geração + abertura do relatório):
+## Integração Contínua
 
-```bash
-npm run test
-```
+O workflow `.github/workflows/ci.yml` separa a execução em jobs de API, Web público e Web autenticado.
 
-## 🧩 Convenções do projeto
+Os testes Web verificam primeiro a disponibilidade do Automation Exercise. Quando o ambiente externo bloqueia o runner do GitHub Actions, por exemplo com HTTP `403`, os cenários afetados são registrados como **não executados por indisponibilidade externa**, e não como testes aprovados.
 
-- Cenários escritos em Gherkin (`.feature`), um arquivo por funcionalidade.
-- Nomenclatura de pastas fixa: `features`, `steps`, `pages`.
-- Nomes de métodos autoexplicativos — sem comentários no código.
-- Sem duplicidade de métodos entre Page Objects.
-- Sem credenciais hardcoded — tudo via `.env`.
+Os cenários autenticados utilizam os GitHub Secrets:
+
+- `LOGIN_EMAIL`
+- `LOGIN_PASSWORD`
+
+Em pushes para `main`, os resultados Allure disponíveis são consolidados e publicados no GitHub Pages.
+
+## Contribuição
+
+Fluxo de branches, commits e Pull Requests: [CONTRIBUTING.md](./CONTRIBUTING.md).

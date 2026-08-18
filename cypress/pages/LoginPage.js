@@ -7,6 +7,7 @@ class LoginPage extends BasePage {
     this.campoSenhaLogin = "input[data-qa='login-password']";
     this.botaoLogin = "button[data-qa='login-button']";
     this.indicadorUsuarioLogado = "a:contains(' Logged in as')";
+    this.mensagemErroLogin = ".login-form p";
   }
 
   acessarPaginaDeLogin() {
@@ -21,6 +22,10 @@ class LoginPage extends BasePage {
 
   usuarioDeveEstarLogado() {
     this.elementoDeveEstarVisivel(this.indicadorUsuarioLogado);
+  }
+
+  mensagemDeErroDeveSerExibida() {
+    this.elementoDeveConterTexto(this.mensagemErroLogin, "incorrect");
   }
 }
 

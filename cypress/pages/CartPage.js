@@ -3,26 +3,44 @@ const BasePage = require("./BasePage");
 class CartPage extends BasePage {
   constructor() {
     super();
-    this.descricaoItemCarrinho = ".cart_description";
+    this.linhaItem = "#cart_info tbody tr";
     this.nomeItemCarrinho = ".cart_description h4 a";
+    this.precoItemCarrinho = ".cart_price p";
+    this.quantidadeItemCarrinho = ".cart_quantity button";
+    this.totalItemCarrinho = ".cart_total_price";
+    this.botaoRemoverItem = ".cart_quantity_delete";
     this.botaoProsseguirParaCheckout = "a:contains('Proceed To Checkout')";
-    this.nomeItemNoCheckout = "#cart_info .cart_description h4 a";
   }
 
   validarProdutoNoCarrinho(nomeProduto) {
-    cy.get(this.nomeItemCarrinho).should("contain.text", nomeProduto);
+    cy.contains(this.linhaItem, nomeProduto)
+      .find(this.nomeItemCarrinho)
+      .should("contain.text", nomeProduto);
   }
 
-  obterQuantidadeItensCarrinho() {
-    return this.obterQuantidadeElementos(this.descricaoItemCarrinho);
+  obterDadosDoProdutoNoCarrinho(nomeProduto) {
+    return cy.contains(this.linhaItem, nomeProduto).then(($linha) => ({
+      nome: $linha.find(this.nomeItemCarrinho).text().trim(),
+      preco: $linha.find(this.precoItemCarrinho).text().trim(),
+      quantidade: $linha.find(this.quantidadeItemCarrinho).text().trim(),
+      total: $linha.find(this.totalItemCarrinho).text().trim(),
+    }));
+  }
+
+  removerProdutoDoCarrinho(nomeProduto) {
+    cy.contains(this.linhaItem, nomeProduto)
+      .should("have.length", 1)
+      .within(() => {
+        cy.get(this.botaoRemoverItem).should("have.length", 1).click();
+      });
+  }
+
+  validarProdutoAusenteDoCarrinho(nomeProduto) {
+    cy.contains(this.linhaItem, nomeProduto).should("not.exist");
   }
 
   prosseguirParaCheckout() {
     this.clicarElemento(this.botaoProsseguirParaCheckout);
-  }
-
-  validarProdutoNaTelaDePagamento(nomeProduto) {
-    cy.get(this.nomeItemNoCheckout).should("contain.text", nomeProduto);
   }
 }
 

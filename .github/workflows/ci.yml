@@ -1,0 +1,316 @@
+name: CI - Testes de Automação
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: https://www.automationexercise.com
+  API_BASE_URL: https://api.trello.com
+  API_ACTION_PATH: /1/actions/592f11060f95a3d3d46a987a
+
+jobs:
+  web-availability:
+    name: Verificar disponibilidade Web
+    runs-on: ubuntu-latest
+    outputs:
+      public: ${{ steps.check.outputs.public }}
+      public-status: ${{ steps.check.outputs.public-status }}
+      auth: ${{ steps.check.outputs.auth }}
+      auth-status: ${{ steps.check.outputs.auth-status }}
+
+    steps:
+      - name: Verificar endpoints do Automation Exercise
+        id: check
+        shell: bash
+        run: |
+          public_status=$(curl --location --silent --output /dev/null --write-out "%{http_code}" --max-redirs 5 "${BASE_URL}/products" || true)
+          auth_status=$(curl --location --silent --output /dev/null --write-out "%{http_code}" --max-redirs 5 "${BASE_URL}/login" || true)
+
+          echo "public-status=${public_status}" >> "$GITHUB_OUTPUT"
+          echo "auth-status=${auth_status}" >> "$GITHUB_OUTPUT"
+
+          if [ "$public_status" = "200" ]; then
+            echo "public=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "public=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ "$auth_status" = "200" ]; then
+            echo "auth=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "auth=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          {
+            echo "### Disponibilidade do ambiente Web"
+            echo "- Produtos: HTTP ${public_status:-indisponível}"
+            echo "- Login: HTTP ${auth_status:-indisponível}"
+            echo ""
+            echo "Quando o ambiente externo bloqueia o runner, os jobs correspondentes ficam como skipped e não são considerados testes aprovados."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  api-tests:
+    name: API - Cypress + Cucumber
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes de API
+        run: npm run cy:run:api
+
+      - name: Gerar relatório Allure da API
+        if: always()
+        run: npm run allure:generate
+
+      - name: Publicar resultados Allure da API
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-results-api
+          path: allure-results
+          if-no-files-found: ignore
+          retention-days: 15
+
+      - name: Publicar relatório Allure da API
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-report-api
+          path: allure-report
+          if-no-files-found: ignore
+          retention-days: 15
+
+  web-public-tests:
+    name: Web público - Busca e Carrinho
+    needs: web-availability
+    if: needs.web-availability.outputs.public == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes Web públicos
+        run: npm run cy:run:web:public
+
+      - name: Gerar relatório Allure Web público
+        if: always()
+        run: npm run allure:generate
+
+      - name: Publicar resultados Allure Web público
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-results-web-public
+          path: allure-results
+          if-no-files-found: ignore
+          retention-days: 15
+
+      - name: Publicar relatório Allure Web público
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-report-web-public
+          path: allure-report
+          if-no-files-found: ignore
+          retention-days: 15
+
+      - name: Publicar evidências de falha Web público
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cypress-evidencias-web-public
+          path: |
+            cypress/videos
+            cypress/screenshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+  web-auth-tests:
+    name: Web autenticado - Login e Checkout
+    needs: web-availability
+    if: needs.web-availability.outputs.auth == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes Web autenticados
+        run: npm run cy:run:web:auth
+        env:
+          LOGIN_EMAIL: ${{ secrets.LOGIN_EMAIL }}
+          LOGIN_PASSWORD: ${{ secrets.LOGIN_PASSWORD }}
+
+      - name: Gerar relatório Allure Web autenticado
+        if: always()
+        run: npm run allure:generate
+
+      - name: Publicar resultados Allure Web autenticado
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-results-web-auth
+          path: allure-results
+          if-no-files-found: ignore
+          retention-days: 15
+
+      - name: Publicar relatório Allure Web autenticado
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-report-web-auth
+          path: allure-report
+          if-no-files-found: ignore
+          retention-days: 15
+
+      - name: Publicar evidências de falha Web autenticado
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cypress-evidencias-web-auth
+          path: |
+            cypress/videos
+            cypress/screenshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+  ci-status:
+    name: Validar resultado da CI
+    if: always()
+    needs:
+      - web-availability
+      - api-tests
+      - web-public-tests
+      - web-auth-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Consolidar resultado
+        shell: bash
+        run: |
+          {
+            echo "### Resumo da execução"
+            echo "- API: ${{ needs.api-tests.result }}"
+            echo "- Web público: ${{ needs.web-public-tests.result }} (HTTP ${{ needs.web-availability.outputs.public-status }})"
+            echo "- Web autenticado: ${{ needs.web-auth-tests.result }} (HTTP ${{ needs.web-availability.outputs.auth-status }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ needs.api-tests.result }}" != "success" ]; then
+            exit 1
+          fi
+
+          if [ "${{ needs.web-availability.outputs.public }}" = "true" ] && \
+             [ "${{ needs.web-public-tests.result }}" != "success" ]; then
+            exit 1
+          fi
+
+          if [ "${{ needs.web-availability.outputs.auth }}" = "true" ] && \
+             [ "${{ needs.web-auth-tests.result }}" != "success" ]; then
+            exit 1
+          fi
+
+  publish-report:
+    name: Publicar relatório Allure no GitHub Pages
+    permissions:
+      contents: write
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.ci-status.result == 'success'
+    needs:
+      - api-tests
+      - web-public-tests
+      - web-auth-tests
+      - ci-status
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Baixar resultados Allure
+        uses: actions/download-artifact@v5
+        with:
+          pattern: allure-results-*
+          path: allure-results
+          merge-multiple: true
+
+      - name: Gerar relatório consolidado
+        run: npm run allure:generate
+
+      - name: Publicar no GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
