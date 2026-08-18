@@ -96,11 +96,16 @@ Web:
 
 API Trello:
 
-- status HTTP `200`;
+- consulta de uma ação existente com validação do status HTTP `200`;
 - leitura e exibição de `data.list.name`;
-- validação do contrato estrutural mínimo da resposta.
+- validação do contrato estrutural da ação, incluindo identificador, criador, data, tipo, lista, quadro e cartão;
+- validação do identificador da ação retornada;
+- validação funcional dos dados relacionados de lista, quadro e cartão;
+- validação do tipo da ação;
+- validação do `Content-Type` JSON;
+- cenário negativo para ação inexistente, com validação do status HTTP `404`.
 
-As chamadas da API ficam centralizadas em `TrelloApiService`.
+As chamadas da API ficam centralizadas em `TrelloApiService`, enquanto massas e valores esperados dos cenários ficam em `TrelloDataProvider`.
 
 ## Allure Report
 
