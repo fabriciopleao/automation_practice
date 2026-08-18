@@ -47,6 +47,13 @@ git push -u origin feature/nome-da-feature
 
 Alterações comuns não devem ser desenvolvidas diretamente na `main`.
 
+## Promoção para a branch principal
+
+Após a integração e validação das alterações em `develop`, a versão final da entrega
+deve ser promovida por meio de Pull Request de `develop` para `main`.
+
+O merge em `main` deve ocorrer somente após a conclusão da CI e a validação dos resultados.
+
 ## Padrão de commits
 
 O projeto utiliza Conventional Commits.
